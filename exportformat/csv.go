@@ -32,6 +32,7 @@ func NewCSV(shop string) (*CSV, error) {
 		"Variant ID",
 		"Variant Title",
 		"SKU",
+		"Barcode",
 		"Handle",
 	}
 
@@ -53,6 +54,7 @@ func (c *CSV) Dump(product shopify.Product) error {
 			strconv.FormatInt(variant.ID, 10),
 			variant.Title,
 			variant.Sku,
+			variant.Barcode,
 			product.Handle,
 		}
 

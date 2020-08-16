@@ -16,6 +16,7 @@ type JSON struct {
 }
 
 var JSONRootProperties = []string{
+	"barcode",
 	"product_id",
 	"product_title",
 	"handle",
@@ -33,11 +34,32 @@ func isValidJSONRootProperty(name string) bool {
 	return false
 }
 
-func (j *JSON) formatForOutput() map[string]interface{} {
-	if j.root == "variant_id" || j.root == "sku" {
+func productMap(product shopify.Product) map[string]interface{} {
+	record := make(map[string]interface{})
+
+	record["product_id"] = strconv.FormatInt(product.ID, 10)
+	record["handle"] = product.Handle
+	record["product_title"] = product.Title
+
+	return record
+}
+
+func variantMap(variant shopify.Variant) map[string]string {
+	record := make(map[string]string)
+
+	record["barcode"] = variant.Barcode
+	record["variant_id"] = strconv.FormatInt(variant.ID, 10)
+	record["variant_title"] = variant.Title
+	record["sku"] = variant.Sku
+
+	return record
+}
+
+func (j *JSON) formatForOutput() interface{} {
+	if j.root == "variant_id" || j.root == "sku" || j.root == "barcode" {
 		return j.formatWithVariantRoot()
 	} else {
-		return j.formatWithProductRoot()
+		return j.formatWithProduct()
 	}
 }
 
@@ -46,20 +68,20 @@ func (j *JSON) formatWithVariantRoot() map[string]interface{} {
 
 	for _, product := range j.products {
 		for _, variant := range product.Variants {
-			record := make(map[string]string)
-
-			record["variant_id"] = strconv.FormatInt(variant.ID, 10)
-			record["variant_title"] = variant.Title
-			record["sku"] = variant.Sku
-
+			record := variantMap(variant)
 			key := record[j.root]
 			if len(key) == 0 {
 				continue
 			}
 
-			record["product_id"] = strconv.FormatInt(product.ID, 10)
-			record["handle"] = product.Handle
-			record["product_title"] = product.Title
+			for key, value := range productMap(product) {
+				svalue, ok := value.(string)
+				if !ok {
+					panic(fmt.Sprintf("Cannot convert product property '%s' to string for product '%s'", key, product.Title))
+				}
+
+				record[key] = svalue
+			}
 
 			output[key] = record
 		}
@@ -69,32 +91,44 @@ func (j *JSON) formatWithVariantRoot() map[string]interface{} {
 	return output
 }
 
+func (j *JSON) formatWithProduct() interface{} {
+	if len(j.root) > 0 {
+		return j.formatWithProductRoot()
+	}
+
+	var output []map[string]interface{}
+
+	for _, product := range j.products {
+		record := productMap(product)
+
+		var variants []map[string]string
+		for _, variant := range product.Variants {
+			variants = append(variants, variantMap(variant))
+		}
+
+		record["variants"] = variants
+		output = append(output, record)
+	}
+
+	return output
+}
+
 func (j *JSON) formatWithProductRoot() map[string]interface{} {
 	output := make(map[string]interface{})
 
 	for _, product := range j.products {
-		record := make(map[string]interface{})
-
-		record["product_id"] = strconv.FormatInt(product.ID, 10)
-		record["handle"] = product.Handle
-		record["product_title"] = product.Title
+		record := productMap(product)
 
 		var variants []map[string]string
 		for _, variant := range product.Variants {
-			v := make(map[string]string)
-
-			v["variant_id"] = strconv.FormatInt(variant.ID, 10)
-			v["variant_title"] = variant.Title
-			v["sku"] = variant.Sku
-
-			variants = append(variants, v)
+			variants = append(variants, variantMap(variant))
 		}
 
 		record["variants"] = variants
 
 		key, ok := record[j.root].(string)
 		if !ok {
-			panic(fmt.Sprintf("Cannot convert JSON root property to a string for product %s", product.ID))
+			panic(fmt.Sprintf("Cannot convert JSON root property '%s' to string for product '%s'", j.root, product.Title))
 		}
 
 		output[key] = record

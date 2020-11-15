@@ -2,8 +2,8 @@
 
 Dump Shopify product and variant IDs —along with other identifiers— to a CSV or JSON file.
 
-When data munging in Shopify you'll often need to (cross-)reference product IDs, variant IDs, and SKUs.
-Shopify does not make product nor variant ID available via their product export.
+When data munging in Shopify you'll often need to (cross-)reference product IDs, variant IDs, SKUs,
+barcodes, etc... Shopify does not make product nor variant ID available via their product export.
 
 Other times one is provided a product spreadsheet with SKUs but the target system relies
 on product/variant IDs.
@@ -60,6 +60,20 @@ Valid properties for the --json-root option are: product_id, product_title, hand
 
 This is the default output format. A file named `shop.csv` will be created in the current directory. `shop` will replaced by the shop's name.
 
+#### Combining CSVs
+
+Once you have a CSV with the missing product info you can combine it with original CSV via the [`xsv`](https://github.com/BurntSushi/xsv) program.
+(Note that csvkit's [`csvjoin`](https://csvkit.readthedocs.io/en/latest/scripts/csvjoin.html) will work as well).
+
+For example, if the original spreadsheet contains a column called `Product SKU` it can be combined with Shopify ID Export's spreadsheet via:
+```
+xsv join 'Product SKU' original-data.csv SKU shop.csv | xsv select '!SKU' > combined-data.csv
+```
+
+The 2nd command `xsv select '!SKU'` removes the `SKU` column as it's now redundant.
+
+For more info and options see `xsv join --help`.
+
 ### Output to JSON
 
 To output a JSON file use the `-j` option:
@@ -76,7 +90,7 @@ This will output each object with the variant's SKU as the root:
 shopify_id_export -j -r sku -t shop-token shop
 ```
 
-Valid properties for the `-r`/`--json-root` option are: `product_id`, `product_title`, `handle`, `variant_id`, `sku`.
+Valid properties for the `-r`/`--json-root` option are: `product_id`, `product_title`, `barcode`, `handle`, `variant_id`, `sku`.
 
 ## License
 

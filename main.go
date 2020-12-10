@@ -13,7 +13,7 @@ import (
 const version = "v0.0.1"
 
 const shopifyAPIVersion = "2020-10"
-const shopifyFields = "id,title,sku,handle,variants"
+const shopifyFields = "id,title,handle,variants"
 
 const usage = `shopify_id_export [hjv] [-k key] [-p password] [-r root-property] [-t token] shop
 

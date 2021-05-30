@@ -10,10 +10,10 @@ import (
 	"github.com/screenstaring/shopify_id_export/exportformat"
 )
 
-const version = "v0.0.1"
+const version = "v0.0.3"
 
 const shopifyAPIVersion = "2020-10"
-const shopifyFields = "id,title,handle,variants"
+const shopifyFields = "id,title,product_type,handle,variants"
 
 const usage = `shopify_id_export [hjv] [-k key] [-p password] [-r root-property] [-t token] shop
 
@@ -42,7 +42,10 @@ func exitFailure(error string, code int) {
 }
 
 func dumpProducts(client *shopify.Client, dumper dumper) error {
-	listOptions := shopify.ListOptions{Fields: shopifyFields, Limit: 250}
+	listOptions := shopify.ListOptions{
+		Fields: shopifyFields,
+		Limit: 250,
+	}
 
 	for {
 		products, pages, err := client.Product.ListWithPagination(

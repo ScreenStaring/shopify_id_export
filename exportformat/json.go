@@ -40,6 +40,7 @@ func productMap(product shopify.Product) map[string]interface{} {
 	record["product_id"] = strconv.FormatInt(product.ID, 10)
 	record["handle"] = product.Handle
 	record["product_title"] = product.Title
+	record["product_type"] = product.ProductType
 
 	return record
 }
@@ -144,7 +145,7 @@ func NewJSON(shop string, jsonRoot string) (*JSON, error) {
 		return nil, fmt.Errorf("Invalid JSON root property: %s", jsonRoot)
 	}
 
-	out, err := os.Create(shop + ".json")
+	out, err := os.Create(shop+".json")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create JSON file: %s", err)
 	}

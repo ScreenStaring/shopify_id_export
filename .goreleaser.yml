@@ -6,10 +6,6 @@ builds:
       - windows
       - darwin
 
-# No archives
-archives:
- - format: binary
-
 snapshot:
   name_template: "{{ .Tag }}-next"
 

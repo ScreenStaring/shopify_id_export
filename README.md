@@ -53,7 +53,7 @@ Options
 
 By default data is output to a CSV file.
 
-Valid properties for the --json-root option are: product_id, product_title, handle, variant_id, sku
+Valid properties for the --json-root option are: barcode, product_id, product_title, handle, variant_id, sku
 ```
 
 ### Output to CSV

@@ -63,7 +63,7 @@ This is the default output format. A file named `shop.csv` will be created in th
 #### Combining CSVs
 
 Once you have a CSV with the missing product info you can combine it with original CSV via the [`xsv`](https://github.com/BurntSushi/xsv) program.
-(Note that csvkit's [`csvjoin`](https://csvkit.readthedocs.io/en/latest/scripts/csvjoin.html) will work as well).
+(csvkit's [`csvjoin`](https://csvkit.readthedocs.io/en/latest/scripts/csvjoin.html) will work as well).
 
 For example, if the original spreadsheet contains a column called `Product SKU` it can be combined with Shopify ID Export's spreadsheet via:
 ```

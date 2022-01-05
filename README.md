@@ -92,6 +92,11 @@ shopify_id_export -j -r sku -t shop-token shop
 
 Valid properties for the `-r`/`--json-root` option are: `product_id`, `product_title`, `barcode`, `handle`, `variant_id`, `sku`.
 
+## See Also
+
+- [Shopify Development Tools](https://github.com/ScreenStaring/shopify-dev-tools) - Assists with the development and/or maintenance of Shopify apps and stores
+
+
 ## License
 
 Released under the MIT License: http://www.opensource.org/licenses/MIT

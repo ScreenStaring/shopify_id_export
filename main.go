@@ -10,9 +10,7 @@ import (
 	"github.com/screenstaring/shopify_id_export/exportformat"
 )
 
-const version = "v0.0.3"
-
-const shopifyAPIVersion = "2020-10"
+const version = "v0.0.4"
 const shopifyFields = "id,title,product_type,handle,variants"
 
 const usage = `shopify_id_export [hjv] [-k key] [-p password] [-r root-property] [-t token] shop
@@ -103,7 +101,7 @@ func main() {
 	argv := flag.Args()
 
 	if showVersion {
-		fmt.Printf("%s (Shopify API Version %s)\n", version, shopifyAPIVersion)
+		fmt.Printf("%s\n", version)
 		os.Exit(0)
 	}
 
@@ -125,7 +123,7 @@ func main() {
 	}
 
 	app := shopify.App{ApiKey: key, Password: password}
-	client := shopify.NewClient(app, argv[0], token, shopify.WithVersion(shopifyAPIVersion))
+	client := shopify.NewClient(app, argv[0], token)
 
 	err = dumpProducts(client, dumper)
 	dumpErr := dumper.Close()

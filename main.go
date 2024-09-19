@@ -3,14 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
-	shopify "github.com/bold-commerce/go-shopify"
+	shopify "github.com/bold-commerce/go-shopify/v3"
 	"github.com/screenstaring/shopify_id_export/exportformat"
 )
 
-const version = "v0.0.4"
+const version = "v0.0.5"
 const shopifyFields = "id,title,product_type,handle,variants"
 
 const usage = `shopify_id_export [hjv] [-k key] [-p password] [-r root-property] [-t token] shop
@@ -21,8 +23,10 @@ Options
 -k --key       key       Shopify API key; defaults to the SHOPIFY_API_KEY environment variable
 -p --password  password  Shopify API password; defaults to the SHOPIFY_API_PASSWORD environment variable
 -r --json-root property  use property as the top-level property for each JSON object
+--timeout      integer   set Shopify client timeout (default: 10 seconds)
 -t --token     token     Shopify API token; defaults to the SHOPIFY_API_TOKEN environment variable
 -v --version             display version information
+--verbose                output Shopify API request/response (default: false)
 
 By default data is output to a CSV file.
 
@@ -75,8 +79,11 @@ func dumpProducts(client *shopify.Client, dumper dumper) error {
 
 func main() {
 	var key, password, token string
-	var asJSON, showHelp, showVersion bool
+	var asJSON, showHelp, showVersion, verbose bool
 	var jsonRoot string
+	var timeout int64
+	var options []shopify.Option
+	var client *shopify.Client
 
 	flag.Usage = func() {
 		exitFailure(fmt.Sprintf(usage, strings.Join(exportformat.JSONRootProperties, ", ")), 2)
@@ -94,8 +101,10 @@ func main() {
 	flag.StringVar(&jsonRoot, "json-root", "", "")
 	flag.StringVar(&token, "t", os.Getenv("SHOPIFY_API_TOKEN"), "")
 	flag.StringVar(&token, "token", os.Getenv("SHOPIFY_API_TOKEN"), "")
+	flag.Int64Var(&timeout, "timeout", -1, "")
 	flag.BoolVar(&showVersion, "v", false, "")
 	flag.BoolVar(&showVersion, "version", false, "")
+	flag.BoolVar(&verbose, "verbose", false, "")
 
 	flag.Parse()
 	argv := flag.Args()
@@ -123,7 +132,23 @@ func main() {
 	}
 
 	app := shopify.App{ApiKey: key, Password: password}
-	client := shopify.NewClient(app, argv[0], token)
+
+	if timeout > -1 {
+		options = append(
+			options,
+			shopify.WithHTTPClient(
+				&http.Client{
+					Timeout: time.Second * time.Duration(timeout),
+				},
+			),
+		)
+	}
+
+	if verbose {
+		options = append(options, shopify.WithLogger(&shopify.LeveledLogger{Level: shopify.LevelDebug}))
+	}
+
+	client = shopify.NewClient(app, argv[0], token, options...)
 
 	err = dumpProducts(client, dumper)
 	dumpErr := dumper.Close()

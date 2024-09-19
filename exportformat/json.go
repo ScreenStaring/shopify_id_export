@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	shopify "github.com/bold-commerce/go-shopify"
+	shopify "github.com/bold-commerce/go-shopify/v3"
 )
 
 type JSON struct {

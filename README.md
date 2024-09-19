@@ -49,7 +49,9 @@ Options
 -p --password  password  Shopify API password; defaults to the SHOPIFY_API_PASSWORD environment variable
 -r --json-root property  use property as the top-level property for each JSON object
 -t --token     token     Shopify API token; defaults to the SHOPIFY_API_TOKEN environment variable
+--timeout      integer   set Shopify client timeout (default: 10 seconds)
 -v --version             display version information
+--verbose                output Shopify API request/response (default: false)
 
 By default data is output to a CSV file.
 

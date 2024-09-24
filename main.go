@@ -46,7 +46,7 @@ func exitFailure(error string, code int) {
 func dumpProducts(client *shopify.Client, dumper dumper) error {
 	listOptions := shopify.ListOptions{
 		Fields: shopifyFields,
-		Limit: 250,
+		Limit: 200,
 	}
 
 	for {

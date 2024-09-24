@@ -24,6 +24,7 @@ Options
 -p --password  password  Shopify API password; defaults to the SHOPIFY_API_PASSWORD environment variable
 -r --json-root property  use property as the top-level property for each JSON object
 --timeout      integer   set Shopify client timeout (default: 10 seconds)
+-s --size      integer   page size to use when retrieving products (default: 250)
 -t --token     token     Shopify API token; defaults to the SHOPIFY_API_TOKEN environment variable
 -v --version             display version information
 --verbose                output Shopify API request/response (default: false)
@@ -43,10 +44,10 @@ func exitFailure(error string, code int) {
 	os.Exit(code)
 }
 
-func dumpProducts(client *shopify.Client, dumper dumper) error {
+func dumpProducts(client *shopify.Client, dumper dumper, pageSize int) error {
 	listOptions := shopify.ListOptions{
 		Fields: shopifyFields,
-		Limit: 200,
+		Limit: pageSize,
 	}
 
 	for {
@@ -82,6 +83,7 @@ func main() {
 	var asJSON, showHelp, showVersion, verbose bool
 	var jsonRoot string
 	var timeout int64
+	var pageSize int
 	var options []shopify.Option
 	var client *shopify.Client
 
@@ -99,6 +101,8 @@ func main() {
 	flag.StringVar(&password, "password", os.Getenv("SHOPIFY_API_PASSWORD"), "")
 	flag.StringVar(&jsonRoot, "r", "", "")
 	flag.StringVar(&jsonRoot, "json-root", "", "")
+	flag.IntVar(&pageSize, "s", 250, "")
+	flag.IntVar(&pageSize, "size", 250, "")
 	flag.StringVar(&token, "t", os.Getenv("SHOPIFY_API_TOKEN"), "")
 	flag.StringVar(&token, "token", os.Getenv("SHOPIFY_API_TOKEN"), "")
 	flag.Int64Var(&timeout, "timeout", -1, "")
@@ -150,7 +154,7 @@ func main() {
 
 	client = shopify.NewClient(app, argv[0], token, options...)
 
-	err = dumpProducts(client, dumper)
+	err = dumpProducts(client, dumper, pageSize)
 	dumpErr := dumper.Close()
 
 	if err != nil {

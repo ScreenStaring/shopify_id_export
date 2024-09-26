@@ -1,3 +1,7 @@
+v0.0.6  2024-09-26
+--------------------
+* Add -s/--size option for specifying product retrieval page size
+
 v0.0.5  2024-09-19
 --------------------
 * Add --timeout option

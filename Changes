@@ -1,3 +1,7 @@
+v0.0.7  2024-11-15
+--------------------
+* Add retry
+
 v0.0.6  2024-09-26
 --------------------
 * Add -s/--size option for specifying product retrieval page size

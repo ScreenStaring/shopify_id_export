@@ -12,7 +12,7 @@ import (
 	"github.com/screenstaring/shopify_id_export/exportformat"
 )
 
-const version = "v0.0.6"
+const version = "v0.0.7"
 const shopifyFields = "id,title,product_type,handle,variants"
 
 const usage = `shopify_id_export [hjv] [-k key] [-p password] [-r root-property] [-t token] shop

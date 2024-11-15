@@ -84,8 +84,9 @@ func main() {
 	var jsonRoot string
 	var timeout int64
 	var pageSize int
-	var options []shopify.Option
 	var client *shopify.Client
+
+	options := []shopify.Option{shopify.WithRetry(5)}
 
 	flag.Usage = func() {
 		exitFailure(fmt.Sprintf(usage, strings.Join(exportformat.JSONRootProperties, ", ")), 2)

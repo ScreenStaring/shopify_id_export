@@ -4,9 +4,8 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
-	"strconv"
 
-	shopify "github.com/bold-commerce/go-shopify/v3"
+	"github.com/screenstaring/shopify_id_export/gql"
 )
 
 type CSV struct {
@@ -40,7 +39,7 @@ func NewCSV(shop string) (*CSV, error) {
 	return c, nil
 }
 
-func (c *CSV) Dump(product shopify.Product) error {
+func (c *CSV) Dump(product gql.Product) error {
 	var err error
 
 	if !c.headerWritten {
@@ -48,12 +47,13 @@ func (c *CSV) Dump(product shopify.Product) error {
 		c.headerWritten = true
 	}
 
-	for _, variant := range product.Variants {
+	for _, edge := range product.Variants.Edges {
+		variant := edge.Node
 		row := []string{
-			strconv.FormatInt(variant.ProductID, 10),
+			product.ID,
 			product.Title,
 			product.ProductType,
-			strconv.FormatInt(variant.ID, 10),
+			variant.ID,
 			variant.Title,
 			variant.Sku,
 			variant.Barcode,

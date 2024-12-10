@@ -4,15 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
-	shopify "github.com/bold-commerce/go-shopify/v3"
+	"github.com/screenstaring/shopify_id_export/gql"
 )
 
 type JSON struct {
 	out      *os.File
 	root     string
-	products []shopify.Product
+	products []gql.Product
 }
 
 var JSONRootProperties = []string{
@@ -34,10 +33,10 @@ func isValidJSONRootProperty(name string) bool {
 	return false
 }
 
-func productMap(product shopify.Product) map[string]interface{} {
+func productMap(product gql.Product) map[string]interface{} {
 	record := make(map[string]interface{})
 
-	record["product_id"] = strconv.FormatInt(product.ID, 10)
+	record["product_id"] = product.ID
 	record["handle"] = product.Handle
 	record["product_title"] = product.Title
 	record["product_type"] = product.ProductType
@@ -45,11 +44,11 @@ func productMap(product shopify.Product) map[string]interface{} {
 	return record
 }
 
-func variantMap(variant shopify.Variant) map[string]string {
+func variantMap(variant gql.Variant) map[string]string {
 	record := make(map[string]string)
 
 	record["barcode"] = variant.Barcode
-	record["variant_id"] = strconv.FormatInt(variant.ID, 10)
+	record["variant_id"] = variant.ID
 	record["variant_title"] = variant.Title
 	record["sku"] = variant.Sku
 
@@ -68,7 +67,8 @@ func (j *JSON) formatWithVariantRoot() map[string]interface{} {
 	output := make(map[string]interface{})
 
 	for _, product := range j.products {
-		for _, variant := range product.Variants {
+		for _, vEdge := range product.Variants.Edges {
+			variant := vEdge.Node
 			record := variantMap(variant)
 			key := record[j.root]
 			if len(key) == 0 {
@@ -103,7 +103,8 @@ func (j *JSON) formatWithProduct() interface{} {
 		record := productMap(product)
 
 		var variants []map[string]string
-		for _, variant := range product.Variants {
+		for _, vEdge := range product.Variants.Edges {
+			variant := vEdge.Node
 			variants = append(variants, variantMap(variant))
 		}
 
@@ -121,7 +122,8 @@ func (j *JSON) formatWithProductRoot() map[string]interface{} {
 		record := productMap(product)
 
 		var variants []map[string]string
-		for _, variant := range product.Variants {
+		for _, vEdge := range product.Variants.Edges {
+			variant := vEdge.Node
 			variants = append(variants, variantMap(variant))
 		}
 
@@ -156,7 +158,7 @@ func NewJSON(shop string, jsonRoot string) (*JSON, error) {
 	return j, nil
 }
 
-func (j *JSON) Dump(product shopify.Product) error {
+func (j *JSON) Dump(product gql.Product) error {
 	j.products = append(j.products, product)
 
 	return nil

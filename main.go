@@ -8,11 +8,12 @@ import (
 	"strings"
 	"time"
 
-	shopify "github.com/bold-commerce/go-shopify/v3"
+	shopify "github.com/bold-commerce/go-shopify/v4"
 	"github.com/screenstaring/shopify_id_export/exportformat"
+	"github.com/screenstaring/shopify_id_export/gql"
 )
 
-const version = "v0.0.7"
+const version = "v0.1.0"
 const shopifyFields = "id,title,product_type,handle,variants"
 
 const usage = `shopify_id_export [hjv] [-k key] [-p password] [-r root-property] [-t token] shop
@@ -35,7 +36,7 @@ Valid properties for the --json-root option are: %s
 `
 
 type dumper interface {
-	Dump(shopify.Product) error
+	Dump(gql.Product) error
 	Close() error
 }
 
@@ -45,34 +46,32 @@ func exitFailure(error string, code int) {
 }
 
 func dumpProducts(client *shopify.Client, dumper dumper, pageSize int) error {
-	listOptions := shopify.ListOptions{
-		Fields: shopifyFields,
-		Limit: pageSize,
+	listOptions := map[string]interface{}{
+		"after": nil,
 	}
 
 	for {
-		products, pages, err := client.Product.ListWithPagination(
-			shopify.ProductListOptions{
-				ListOptions: listOptions,
-			},
-		)
-
+		products, err := gql.FindProducts(client, listOptions)
 		if err != nil {
 			return fmt.Errorf("Failed retrieve products: "+err.Error())
 		}
 
-		for _, product := range products {
+		page := products.PageInfo
+
+		for _, edge := range(products.Edges) {
+			product := edge.Node
+
 			err = dumper.Dump(product)
 			if err != nil {
 				return fmt.Errorf("Failed saving products: "+err.Error())
 			}
 		}
 
-		if pages.NextPageOptions == nil {
+		if !page.HasNextPage {
 			break
 		}
 
-		listOptions.PageInfo = pages.NextPageOptions.PageInfo
+		listOptions["after"] = page.Cursor
 	}
 
 	return nil
@@ -86,7 +85,12 @@ func main() {
 	var pageSize int
 	var client *shopify.Client
 
-	options := []shopify.Option{shopify.WithRetry(5)}
+	options := []shopify.Option{
+		shopify.WithRetry(5),
+		// Bug forces us to specify version
+		// https://github.com/bold-commerce/go-shopify/issues/314
+		shopify.WithVersion("2024-10"),
+	}
 
 	flag.Usage = func() {
 		exitFailure(fmt.Sprintf(usage, strings.Join(exportformat.JSONRootProperties, ", ")), 2)
@@ -141,6 +145,7 @@ func main() {
 	if timeout > -1 {
 		options = append(
 			options,
+			// FIXME: update for GQL
 			shopify.WithHTTPClient(
 				&http.Client{
 					Timeout: time.Second * time.Duration(timeout),
@@ -153,7 +158,10 @@ func main() {
 		options = append(options, shopify.WithLogger(&shopify.LeveledLogger{Level: shopify.LevelDebug}))
 	}
 
-	client = shopify.NewClient(app, argv[0], token, options...)
+	client, err = shopify.NewClient(app, argv[0], token, options...)
+	if err != nil {
+		exitFailure(err.Error(), 2)
+	}
 
 	err = dumpProducts(client, dumper, pageSize)
 	dumpErr := dumper.Close()

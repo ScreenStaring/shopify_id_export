@@ -11,6 +11,12 @@ on product/variant IDs.
 This program can help.
 
 
+## Shopify REST API Removal
+
+To account for Shopify's [Products and Variants API removal](https://shopify.dev/docs/apps/build/graphql/migrate/new-product-model)
+v0.1.0 has been updated from the REST Admin API to the GraphQL Admin API. From testing (prior to Feb 1st, 2025, the REST API cutoff) this changed
+resulted in a 4x increase in export time! 😱
+
 ## Installation
 
 Download the version for your platform on the [releases page](https://github.com/screenstaring/shopify_id_export/releases).

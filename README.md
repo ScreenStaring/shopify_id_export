@@ -1,5 +1,11 @@
 # Shopify ID Export
 
+**For ID exporting use the [Shopify Development Tools](https://github.com/ScreenStaring/shopify-dev-tools)** export command: `sdt products export`.
+
+**Shopify ID Export is in maintenance mode**
+
+---
+
 Dump Shopify product and variant IDs —along with other identifiers— to a CSV or JSON file.
 
 When data munging in Shopify you'll often need to (cross-)reference product IDs, variant IDs, SKUs,
